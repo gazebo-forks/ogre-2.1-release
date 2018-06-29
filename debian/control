@@ -1,0 +1,123 @@
+Source: ogre-2.1
+Priority: optional
+Section: libs
+Standards-Version: 4.1.4
+Maintainer: Debian Games Team <pkg-games-devel@lists.alioth.debian.org>
+Uploaders: Manuel A. Fernandez Montecelo <mafm@debian.org>
+Homepage: http://ogre3d.org/
+Vcs-Browser: https://salsa.debian.org/games-team/ogre-2.1
+Vcs-Git: https://salsa.debian.org/games-team/ogre-2.1
+Build-Depends: debhelper (>= 11),
+               dpkg-dev (>= 1.16.1~),
+               cmake (>= 2.8.0),
+               chrpath,
+               pkg-config,
+               libboost-dev,
+               libboost-atomic-dev,
+               libboost-date-time-dev,
+               libboost-thread-dev,
+	       libcppunit-dev,
+               libfreeimage-dev,
+               libfreetype6-dev,
+               libglu1-mesa-dev | libglu-dev,
+               libgl1-mesa-dev | libgl-dev,
+               libgles2-mesa-dev | libgles2-dev,
+               libpoco-dev,
+               libois-dev [linux-any],
+               libtbb-dev,
+               libtinyxml-dev,
+               libxrandr-dev,
+               libxxf86vm-dev,
+               libxaw7-dev,
+               libxt-dev,
+               libzzip-dev,
+               libz-dev,
+               zlib1g-dev
+Build-Depends-Indep: doxygen,
+                     graphviz,
+                     texinfo
+
+Package: libogre-2.1-dev
+Section: libdevel
+Architecture: any
+Depends: ${misc:Depends},
+         libogre-2.1 (= ${binary:Version}),
+         libboost-dev,
+         libboost-thread-dev
+Conflicts: libogre-dev (<< 2.1.0), libogre-1.8-dev (<< 2.1.0)
+Suggests: ogre-2.1-doc, libogre-2.1-dbg
+Description: 3D Object-Oriented Graphics Rendering Engine (development files)
+ OGRE (Object-Oriented Graphics Rendering Engine) is a scene-oriented, flexible
+ 3D engine written in C++ designed to make it easier and more intuitive for
+ developers to produce applications utilising hardware-accelerated 3D
+ graphics. The class library abstracts all the details of using the underlying
+ system libraries like Direct3D and OpenGL and provides an interface based on
+ world objects and other intuitive classes.
+ .
+ This package contains the headers needed to develop with OGRE.
+
+Package: libogre-2.1
+Architecture: any
+Multi-Arch: same
+Pre-Depends: ${misc:Pre-Depends}
+Depends: ${misc:Depends},
+         ${shlibs:Depends}
+Conflicts: libogre-2.1.0
+Replaces: libogre-2.1.0
+Description: 3D Object-Oriented Graphics Rendering Engine (libraries)
+ OGRE (Object-Oriented Graphics Rendering Engine) is a scene-oriented, flexible
+ 3D engine written in C++ designed to make it easier and more intuitive for
+ developers to produce applications utilising hardware-accelerated 3D
+ graphics. The class library abstracts all the details of using the underlying
+ system libraries like Direct3D and OpenGL and provides an interface based on
+ world objects and other intuitive classes.
+ .
+ This package contains the library and plugins.
+
+Package: ogre-2.1-doc
+Section: doc
+Architecture: all
+Depends: ${misc:Depends},
+         libjs-jquery
+Description: 3D Object-Oriented Graphics Rendering Engine (documentation)
+ OGRE (Object-Oriented Graphics Rendering Engine) is a scene-oriented, flexible
+ 3D engine written in C++ designed to make it easier and more intuitive for
+ developers to produce applications utilising hardware-accelerated 3D
+ graphics. The class library abstracts all the details of using the underlying
+ system libraries like Direct3D and OpenGL and provides an interface based on
+ world objects and other intuitive classes.
+ .
+ This package contains the documentation.
+
+Package: ogre-2.1-tools
+Section: devel
+Architecture: any
+Depends: ${misc:Depends},
+         ${shlibs:Depends}
+Conflicts: ogre-tools (<< 2.1.0), ogre-1.8-tools (<< 2.1.0)
+Description: 3D Object-Oriented Graphics Rendering Engine (tools)
+ OGRE (Object-Oriented Graphics Rendering Engine) is a scene-oriented, flexible
+ 3D engine written in C++ designed to make it easier and more intuitive for
+ developers to produce applications utilising hardware-accelerated 3D
+ graphics. The class library abstracts all the details of using the underlying
+ system libraries like Direct3D and OpenGL and provides an interface based on
+ world objects and other intuitive classes.
+ .
+ This package contains tools used to convert from and to OGRE's native mesh
+ format.
+
+Package: blender-ogrexml-2.1
+Section: graphics
+Architecture: all
+Depends: ${misc:Depends},
+         blender
+Conflicts: blender-ogrexml (<< 2.1.0), blender-ogrexml-1.8 (<< 2.1.0)
+Description: Blender Exporter for OGRE
+ OGRE (Object-Oriented Graphics Rendering Engine) is a scene-oriented, flexible
+ 3D engine written in C++ designed to make it easier and more intuitive for
+ developers to produce applications utilising hardware-accelerated 3D
+ graphics. The class library abstracts all the details of using the underlying
+ system libraries like Direct3D and OpenGL and provides an interface based on
+ world objects and other intuitive classes.
+ .
+ This package contains the Blender exporter for OGRE.

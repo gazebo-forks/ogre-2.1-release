@@ -1,0 +1,141 @@
+#!/usr/bin/make -f
+
+# Uncomment this to turn on verbose mode.
+#export DH_VERBOSE=1
+
+export DEB_BUILD_MAINT_OPTIONS   := hardening=+bindnow
+
+DEB_HOST_MULTIARCH ?= $(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
+
+# Use this variable to define the particular version of OGRE that we're building
+OGRE_VERSION=2.1
+OGRE_VERSION_ABI_CHANGE=$(OGRE_VERSION)v5
+
+OGRE_CHANGELOG = Docs/ChangeLog.html
+
+# Directories to install with Multi-arch and versioned OGRE dir names
+LIB_MULTIARCH_DIR = /usr/lib/$(DEB_HOST_MULTIARCH)
+LIB_MULTIARCH_PRIVATE_DIR = /usr/lib/$(DEB_HOST_MULTIARCH)/OGRE-$(OGRE_VERSION)
+
+#export DEB_LDFLAGS_MAINT_APPEND  := -Wl,-z,defs -Wl,--as-needed
+# disable -Wl,--as-needed on ia64 due to bug #718047, see also #725143
+#ifeq ($(DEB_HOST_ARCH),ia64)
+#export DEB_LDFLAGS_MAINT_APPEND  := -Wl,-z,defs
+#else
+#export DEB_LDFLAGS_MAINT_APPEND  := -Wl,-z,defs -Wl,--as-needed
+#endif
+
+UURL = git://github.com/OGRECave/ogre.git
+UURL_BRANCH=v2-1
+
+PKD  = $(abspath $(dir $(MAKEFILE_LIST)))
+PKG  = ogre-2.1
+DATE = $(shell date +%Y%m%d)
+#HASH = $(shell git ls-remote $(UURL) $(UURL_BRANCH) | cut -c 1-6)
+LATEST_VER ?= $(shell dpkg-parsechangelog -l debian/changelog | grep ^Version | sed -n 's/.* \([0-9]\+\.[0-9]\+\.[0-9]\+\)\+.*/\1/p')
+VER = $(LATEST_VER)+$(DATE)r$(HASH)
+
+.PHONY: get-orig-source \
+        override_dh_auto_clean \
+	override_dh_auto_configure \
+	override_dh_auto_build-indep \
+	override_dh_auto_install \
+	override_dh_shlibdeps
+
+
+override_dh_auto_configure:
+	# Samples removed (do not meet DFSG), modify CMake files accordingly
+	sed -i 's|^add_subdirectory(Samples)|#add_subdirectory(Samples)|' CMakeLists.txt
+	#sed -i "/OGRE_.*_PATH/ s|share/OGRE|share/OGRE-$(OGRE_VERSION)|g" CMake/InstallResources.cmake
+
+        # RPATH from http://www.ogre3d.org/tikiwiki/Building+Ogre+With+CMake
+	dh_auto_configure -- \
+		-DOGRE_LIB_DIRECTORY="lib/$(DEB_HOST_MULTIARCH)" \
+		-DOGRE_FULL_RPATH:BOOL=FALSE \
+		-DOGRE_BUILD_RENDERSYSTEM_GLES2:BOOL=TRUE \
+		-DOGRE_BUILD_DOCS:BOOL=TRUE \
+		-DOGRE_INSTALL_DOCS:BOOL=TRUE \
+		-DOGRE_BUILD_SAMPLES:BOOL=FALSE \
+		-DOGRE_INSTALL_SAMPLES:BOOL=FALSE \
+		-DOGRE_INSTALL_SAMPLES_SOURCE:BOOL=FALSE
+
+override_dh_auto_build-indep:
+	dh_auto_build -i --
+
+        # generate doxygen API doc
+        #cd obj-$(DEB_HOST_MULTIARCH) && make OgreDoc
+	dh_auto_build -i -- OgreDoc
+
+        # API generated again in makedocs.sh, disable and generate only manual
+        # and vbo-update
+	sed -i 's|doxygen src/html.cfg|#doxygen src/html.cfg|g' Docs/src/makedocs.sh
+	sed -i '/texi2html/ s|texi2html -Verbose|makeinfo --html --force|g;s|-split=node -top_file=index.html|--split=node|g' Docs/src/makedocs.sh
+	cd Docs && bash ./src/makedocs.sh
+
+override_dh_install-arch:
+	# Copy files from template for this particular version
+	cp -f debian/libogre-VERSION.install debian/libogre-$(OGRE_VERSION_ABI_CHANGE).install
+	cp -f debian/libogre-VERSION.lintian-overrides debian/libogre-$(OGRE_VERSION_ABI_CHANGE).lintian-overrides
+	cp -f debian/libogre-VERSION.preinst debian/libogre-$(OGRE_VERSION_ABI_CHANGE).preinst
+	cp -f debian/libogre-VERSION.postinst debian/libogre-$(OGRE_VERSION_ABI_CHANGE).postinst
+	cp -f debian/libogre-VERSION.postrm debian/libogre-$(OGRE_VERSION_ABI_CHANGE).postrm
+
+        # Introduced in 1.7.3-5 as an attempt at using versioned files/dirs for
+        # plugins and config files (so several versions of OGRE can be installed
+        # at once)
+	mv debian/tmp/usr/lib/$(DEB_HOST_MULTIARCH)/OGRE debian/tmp/$(LIB_MULTIARCH_PRIVATE_DIR)
+	sed -i "/{libdir}/ s|{libdir}/OGRE|{libdir}/OGRE-$(OGRE_VERSION)|g" debian/tmp/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/*
+        # Samples
+        #sed -i "/OGRE/ s|/OGRE|/OGRE-$(OGRE_VERSION)|g" debian/tmp/usr/share/OGRE/*.cfg
+        #mv debian/tmp/usr/share/OGRE debian/tmp/usr/share/OGRE-$(OGRE_VERSION)
+
+        # multi-arch/rpath issue with lintian:
+        # E: libogre-1.7.3: binary-or-shlib-defines-rpath usr/lib/x86_64-linux-gnu/OGRE/Plugin_OctreeZone.so /usr/lib/OGRE
+	chrpath --replace $(LIB_MULTIARCH_PRIVATE_DIR) debian/tmp/$(LIB_MULTIARCH_PRIVATE_DIR)/Plugin_OctreeZone.so.*
+
+        # docs installed in other way
+        #rm -rfv debian/tmp/usr/share/OGRE/docs
+
+        # remove .md5, .map and other files that we do not want installed
+        #find debian/tmp/usr/share/OGRE/docs/api/html -type f -not \( -iname '*.html' -or -iname '*.png' -or -iname '*.css' -or -iname '*.js' \) -exec rm -fv {} \;
+
+	dh_install -a --list-missing
+
+override_dh_install-indep:
+	# remove .md5, .map and other files that we do not want installed
+	find debian/tmp/usr/share/OGRE/docs/api/html -type f -not \( -iname '*.html' -or -iname '*.png' -or -iname '*.css' -or -iname '*.js' \) -exec rm -fv {} \;
+
+	dh_install -i --list-missing -Xjquery.js
+
+override_dh_installchangelogs:
+	dh_installchangelogs -- $(OGRE_CHANGELOG)
+
+override_dh_clean:
+	dh_clean
+
+        # Remove files from template
+	rm -rf debian/libogre-$(OGRE_VERSION).*
+
+get-orig-source: $(PKG)_$(VER).orig.tar.xz $(info I: $(PKG)_$(VER))
+
+$(PKG)_$(VER).orig.tar.xz:
+	$(if $(wildcard $(PKG)-$(VER)),$(error $(PKG)-$(VER) exist, aborting..))
+	@echo "# Downloading ${PKG} repo ..."
+	git clone $(UURL) $(PKG)-$(VER) \
+	|| $(RM) -r $(PKG)-$(VER)
+	cd $(PKG)-$(VER) \
+	&& git checkout ${UURL_BRANCH} \
+	&& echo "# Setting times..." \
+	&& git ls-tree -r --name-only HEAD | while read F ; do touch --no-dereference -d "$$(git log -1 --format="%ai" -- "$$F")" "$$F"; done \
+	&& echo "# Cleaning-up..." \
+	&& $(RM) -r -v \
+	notneededdir/unwantedfile1 \
+	notneededdir/unwantedfiles.* \
+	&& $(RM) -r .git .git*
+	@echo "# Packing..."
+	find -L "$(PKG)-$(VER)" -xdev -type f -print | LC_ALL=C sort \
+	| XZ_OPT="-0v" tar -caf "$(PKG)_$(VER).orig.tar.xz" -T- --owner=root --group=root --mode=a+rX \
+	&& $(RM) -r "$(PKG)-$(VER)"
+
+%:
+	dh $@ --buildsystem=cmake 
