@@ -1,6 +1,5 @@
-ogre-2.1 (2.0.0+20180622r22d254-1) xenial; urgency=medium
+ogre-2.1 (2.0.9999_20180616_06a386f-1) xenial; urgency=medium
 
-  * Imported Upstream version 2.1.0+20180622r22d254
+  * Imported Upstream version 2.0.9999_20180616_06a386f
 
- -- Jose Luis Rivero <jrivero@osrfoundation.org>  Mon, 25 Jun 2018 19:25:40 +0200
-
+ -- Jose Luis Rivero <jrivero@osrfoundation.org>  Fri, 29 Jun 2018 17:23:44 +0200
