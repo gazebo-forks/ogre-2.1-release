@@ -60,9 +60,9 @@ override_dh_auto_build-indep:
 
         # API generated again in makedocs.sh, disable and generate only manual
         # and vbo-update
-	sed -i 's|doxygen src/html.cfg|#doxygen src/html.cfg|g' Docs/src/makedocs.sh
-	sed -i '/texi2html/ s|texi2html -Verbose|makeinfo --html --force|g;s|-split=node -top_file=index.html|--split=node|g' Docs/src/makedocs.sh
-	cd Docs && bash ./src/makedocs.sh
+	#sed -i 's|doxygen src/html.cfg|#doxygen src/html.cfg|g' Docs/src/makedocs.sh
+	#sed -i '/texi2html/ s|texi2html -Verbose|makeinfo --html --force|g;s|-split=node -top_file=index.html|--split=node|g' Docs/src/makedocs.sh
+	#cd Docs && bash ./src/makedocs.sh
 
 override_dh_install-arch:
 	# Copy files from template for this particular version
@@ -86,12 +86,6 @@ override_dh_install-arch:
 	chrpath --replace $(LIB_MULTIARCH_PRIVATE_DIR) debian/tmp/$(LIB_MULTIARCH_PRIVATE_DIR)/Plugin_OctreeZone.so.*
 
 	dh_install -a --list-missing
-
-override_dh_install-indep:
-	# remove .md5, .map and other files that we do not want installed
-	find debian/tmp/usr/share/OGRE/docs/api/html -type f -not \( -iname '*.html' -or -iname '*.png' -or -iname '*.css' -or -iname '*.js' \) -exec rm -fv {} \;
-
-	dh_install -i --list-missing -Xjquery.js
 
 override_dh_installchangelogs:
 	dh_installchangelogs -- $(OGRE_CHANGELOG)
