@@ -46,7 +46,6 @@ override_dh_auto_configure:
 		-DOGRE_BUILD_DOCS:BOOL=TRUE \
 		-DOGRE_INSTALL_DOCS:BOOL=TRUE \
 		-DOGRE_BUILD_SAMPLES:BOOL=FALSE \
-		-DOGRE_BUILD_PLUGIN_OCTREE=TRUE \
 		-DOGRE_INSTALL_SAMPLES:BOOL=FALSE \
 		-DOGRE_INSTALL_SAMPLES_SOURCE:BOOL=FALSE
 
@@ -79,10 +78,6 @@ override_dh_install-arch:
         # Samples
         #sed -i "/OGRE/ s|/OGRE|/OGRE-$(OGRE_VERSION)|g" debian/tmp/usr/share/OGRE/*.cfg
         #mv debian/tmp/usr/share/OGRE debian/tmp/usr/share/OGRE-$(OGRE_VERSION)
-
-        # multi-arch/rpath issue with lintian:
-        # E: libogre-1.7.3: binary-or-shlib-defines-rpath usr/lib/x86_64-linux-gnu/OGRE/Plugin_OctreeZone.so /usr/lib/OGRE
-	chrpath --replace $(LIB_MULTIARCH_PRIVATE_DIR) debian/tmp/$(LIB_MULTIARCH_PRIVATE_DIR)/Plugin_OctreeZone.so.*
 
 	dh_install -a --list-missing
 
