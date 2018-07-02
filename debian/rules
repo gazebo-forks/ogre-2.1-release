@@ -30,7 +30,6 @@ VER = $(LATEST_VER)+$(DATE)r$(HASH)
         override_dh_auto_clean \
 	override_dh_auto_configure \
 	override_dh_auto_build-indep \
-	override_dh_auto_install \
 	override_dh_shlibdeps
 
 
