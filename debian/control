@@ -89,23 +89,6 @@ Description: 3D Object-Oriented Graphics Rendering Engine (documentation)
  .
  This package contains the documentation.
 
-Package: ogre-2.1-tools
-Section: devel
-Architecture: any
-Depends: ${misc:Depends},
-         ${shlibs:Depends}
-Conflicts: ogre-tools (<< 2.1.0), ogre-1.8-tools (<< 2.1.0)
-Description: 3D Object-Oriented Graphics Rendering Engine (tools)
- OGRE (Object-Oriented Graphics Rendering Engine) is a scene-oriented, flexible
- 3D engine written in C++ designed to make it easier and more intuitive for
- developers to produce applications utilising hardware-accelerated 3D
- graphics. The class library abstracts all the details of using the underlying
- system libraries like Direct3D and OpenGL and provides an interface based on
- world objects and other intuitive classes.
- .
- This package contains tools used to convert from and to OGRE's native mesh
- format.
-
 Package: blender-ogrexml-2.1
 Section: graphics
 Architecture: all
