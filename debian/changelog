@@ -1,4 +1,10 @@
-ogre-2.1 (2.0.9999~20180616~06a386f-1) xenial; urgency=medium
+ogre-2.1 (2.0.9999~20180616~06a386f-2) bionic; urgency=medium
+
+  * Update conflicts on 1.9 deb packages
+
+ -- Jose Luis Rivero <jrivero@osrfoundation.org>  Tue, 03 Jul 2018 14:08:46 +0200
+
+ogre-2.1 (2.0.9999~20180616~06a386f-1) bionic; urgency=medium
 
   * Imported Upstream version 2.0.9999_20180616_06a386f
 
