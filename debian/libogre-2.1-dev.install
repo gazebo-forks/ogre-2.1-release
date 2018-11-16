@@ -1,4 +1,4 @@
-usr/include/*
-usr/lib/*/libOgre*.so
-usr/lib/*/pkgconfig/*.pc
-usr/lib/*/OGRE*/cmake/*.cmake
+usr/include/OGRE-*
+usr/lib/*/OGRE-*/libOgre*.so
+usr/lib/*/OGRE-*/pkgconfig/*.pc
+usr/lib/*/OGRE-*/OGRE/cmake/*.cmake

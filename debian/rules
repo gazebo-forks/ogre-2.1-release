@@ -13,8 +13,10 @@ OGRE_VERSION=2.1
 OGRE_CHANGELOG = Docs/ChangeLog.html
 
 # Directories to install with Multi-arch and versioned OGRE dir names
+LIB_MULTIARCH_OGRE_RELATIVE=lib/$(DEB_HOST_MULTIARCH)/OGRE-$(OGRE_VERSION)
 LIB_MULTIARCH_DIR = /usr/lib/$(DEB_HOST_MULTIARCH)
-LIB_MULTIARCH_PRIVATE_DIR = /usr/lib/$(DEB_HOST_MULTIARCH)/OGRE-$(OGRE_VERSION)
+LIB_MULTIARCH_PRIVATE_DIR = /usr/$(LIB_MULTIARCH_OGRE_RELATIVE)
+HEADERS_MULTIARCH_PRIVATE_DIR = /usr/include/OGRE-$(OGRE_VERSION)
 
 UURL = git://github.com/OGRECave/ogre.git
 UURL_BRANCH=v2-1
@@ -40,7 +42,7 @@ override_dh_auto_configure:
 
         # RPATH from http://www.ogre3d.org/tikiwiki/Building+Ogre+With+CMake
 	dh_auto_configure -- \
-		-DOGRE_LIB_DIRECTORY="lib/$(DEB_HOST_MULTIARCH)" \
+		-DOGRE_LIB_DIRECTORY="$(LIB_MULTIARCH_OGRE_RELATIVE)" \
 		-DOGRE_FULL_RPATH:BOOL=FALSE \
 		-DOGRE_BUILD_RENDERSYSTEM_GLES2:BOOL=FALSE \
 		-DOGRE_BUILD_DOCS:BOOL=TRUE \
@@ -63,23 +65,19 @@ override_dh_auto_build-indep:
 	#cd Docs && bash ./src/makedocs.sh
 
 override_dh_install-arch:
-	# Copy files from template for this particular version
-	cp -f debian/libogre-VERSION.install debian/libogre-$(OGRE_VERSION).install
-	cp -f debian/libogre-VERSION.lintian-overrides debian/libogre-$(OGRE_VERSION).lintian-overrides
-	cp -f debian/libogre-VERSION.preinst debian/libogre-$(OGRE_VERSION).preinst
-	cp -f debian/libogre-VERSION.postinst debian/libogre-$(OGRE_VERSION).postinst
-	cp -f debian/libogre-VERSION.postrm debian/libogre-$(OGRE_VERSION).postrm
+	# Support multiple OGRE versions at once
+	mv debian/tmp/usr/include/OGRE/ debian/tmp/${HEADERS_MULTIARCH_PRIVATE_DIR}
+	# mv debian/tmp/usr/lib/$(DEB_HOST_MULTIARCH)/ debian/tmp/$(LIB_MULTIARCH_PRIVATE_DIR)
+	# mv debian/tmp/usr/lib/$(DEB_HOST_MULTIARCH)/OGRE debian/tmp/$(LIB_MULTIARCH_PRIVATE_DIR)
+	# sed -i "/{libdir}/ s|{libdir}/OGRE|{libdir}/OGRE-$(OGRE_VERSION)|g" debian/tmp/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/*
+	sed -i '/^includedir/s/$$/\/OGRE-$(OGRE_VERSION)/' debian/tmp/usr/$(LIB_MULTIARCH_OGRE_RELATIVE)/pkgconfig/*
 
-        # Introduced in 1.7.3-5 as an attempt at using versioned files/dirs for
-        # plugins and config files (so several versions of OGRE can be installed
-        # at once)
-	mv debian/tmp/usr/lib/$(DEB_HOST_MULTIARCH)/OGRE debian/tmp/$(LIB_MULTIARCH_PRIVATE_DIR)
-	sed -i "/{libdir}/ s|{libdir}/OGRE|{libdir}/OGRE-$(OGRE_VERSION)|g" debian/tmp/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/*
         # Samples
         #sed -i "/OGRE/ s|/OGRE|/OGRE-$(OGRE_VERSION)|g" debian/tmp/usr/share/OGRE/*.cfg
         #mv debian/tmp/usr/share/OGRE debian/tmp/usr/share/OGRE-$(OGRE_VERSION)
 
-	dh_install -a --list-missing
+	dh_install -a
+	dh_missing -list-missing
 
 override_dh_installchangelogs:
 	dh_installchangelogs -- $(OGRE_CHANGELOG)
