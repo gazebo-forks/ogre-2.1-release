@@ -1,4 +1,5 @@
 usr/include/OGRE-*
 usr/lib/*/OGRE-*/libOgre*.so
-usr/lib/*/OGRE-*/pkgconfig/*.pc
+usr/lib/*/pkgconfig/*.pc
+# TODO: migrate to standard location
 usr/lib/*/OGRE-*/OGRE/cmake/*.cmake

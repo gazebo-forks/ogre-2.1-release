@@ -1,2 +1,5 @@
 tmp/
 *.swp
+*.swo
+debian/.debhelper/
+debian/debhelper-*

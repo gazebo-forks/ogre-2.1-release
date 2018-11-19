@@ -4,6 +4,7 @@
 #export DH_VERBOSE=1
 
 export DEB_BUILD_MAINT_OPTIONS   := hardening=+bindnow
+SHELL := bash
 
 DEB_HOST_MULTIARCH ?= $(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
 
@@ -13,8 +14,9 @@ OGRE_VERSION=2.1
 OGRE_CHANGELOG = Docs/ChangeLog.html
 
 # Directories to install with Multi-arch and versioned OGRE dir names
-LIB_MULTIARCH_OGRE_RELATIVE=lib/$(DEB_HOST_MULTIARCH)/OGRE-$(OGRE_VERSION)
 LIB_MULTIARCH_DIR = /usr/lib/$(DEB_HOST_MULTIARCH)
+
+LIB_MULTIARCH_OGRE_RELATIVE=lib/$(DEB_HOST_MULTIARCH)/OGRE-$(OGRE_VERSION)
 LIB_MULTIARCH_PRIVATE_DIR = /usr/$(LIB_MULTIARCH_OGRE_RELATIVE)
 HEADERS_MULTIARCH_PRIVATE_DIR = /usr/include/OGRE-$(OGRE_VERSION)
 
@@ -29,11 +31,10 @@ LATEST_VER ?= $(shell dpkg-parsechangelog -l debian/changelog | grep ^Version | 
 VER = $(LATEST_VER)+$(DATE)r$(HASH)
 
 .PHONY: get-orig-source \
-        override_dh_auto_clean \
 	override_dh_auto_configure \
 	override_dh_auto_build-indep \
+	override_dh_installchangelogs \
 	override_dh_shlibdeps
-
 
 override_dh_auto_configure:
 	# Samples removed (do not meet DFSG), modify CMake files accordingly
@@ -64,29 +65,35 @@ override_dh_auto_build-indep:
 	#sed -i '/texi2html/ s|texi2html -Verbose|makeinfo --html --force|g;s|-split=node -top_file=index.html|--split=node|g' Docs/src/makedocs.sh
 	#cd Docs && bash ./src/makedocs.sh
 
+override_dh_shlibdeps:
+	dh_shlibdeps -l$(CURDIR)/debian/tmp/usr/lib/x86_64-linux-gnu/OGRE-2.1/
+
 override_dh_install-arch:
-	# Support multiple OGRE versions at once
+	# Support multiple OGRE versions at once. Relocate headers
 	mv debian/tmp/usr/include/OGRE/ debian/tmp/${HEADERS_MULTIARCH_PRIVATE_DIR}
-	# mv debian/tmp/usr/lib/$(DEB_HOST_MULTIARCH)/ debian/tmp/$(LIB_MULTIARCH_PRIVATE_DIR)
-	# mv debian/tmp/usr/lib/$(DEB_HOST_MULTIARCH)/OGRE debian/tmp/$(LIB_MULTIARCH_PRIVATE_DIR)
-	# sed -i "/{libdir}/ s|{libdir}/OGRE|{libdir}/OGRE-$(OGRE_VERSION)|g" debian/tmp/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/*
 	sed -i '/^includedir/s/$$/\/OGRE-$(OGRE_VERSION)/' debian/tmp/usr/$(LIB_MULTIARCH_OGRE_RELATIVE)/pkgconfig/*
+	# Modify pkgconfig names
+	sed -i 's/Name:\ OGRE/Name:\ OGRE-$(OGRE_VERSION)/' debian/tmp/usr/$(LIB_MULTIARCH_OGRE_RELATIVE)/pkgconfig/*
+	# Change pkgconfig file names
+	for f in $(wildcard  debian/tmp/usr/$(LIB_MULTIARCH_OGRE_RELATIVE)/pkgconfig/*.pc); do \
+	   mv $$f `sed 's/OGRE\(.*\)OGRE\(.*\).pc/OGRE\1OGRE-$(OGRE_VERSION)\2.pc/' <<< $$f`; \
+	done
+	# Remove extra Include in main pkgconfig file and MeshLoadGenerator
+	sed -i 's:-I$${includedir}/OGRE::' debian/tmp/usr/$(LIB_MULTIARCH_OGRE_RELATIVE)/pkgconfig/OGRE-${OGRE_VERSION}.pc
+	sed -i 's:$${includedir}/OGRE:$${includedir}:' debian/tmp/usr/$(LIB_MULTIARCH_OGRE_RELATIVE)/pkgconfig/OGRE-${OGRE_VERSION}-MeshLodGenerator.pc
+
+	# Change pkgconfig path to be in the standard location
+	mv debian/tmp/usr/$(LIB_MULTIARCH_OGRE_RELATIVE)/pkgconfig/ debian/tmp/$(LIB_MULTIARCH_DIR)/
 
         # Samples
         #sed -i "/OGRE/ s|/OGRE|/OGRE-$(OGRE_VERSION)|g" debian/tmp/usr/share/OGRE/*.cfg
         #mv debian/tmp/usr/share/OGRE debian/tmp/usr/share/OGRE-$(OGRE_VERSION)
 
 	dh_install -a
-	dh_missing -list-missing
+	dh_missing --list-missing
 
 override_dh_installchangelogs:
 	dh_installchangelogs -- $(OGRE_CHANGELOG)
-
-override_dh_clean:
-	dh_clean
-
-        # Remove files from template
-	rm -rf debian/libogre-$(OGRE_VERSION).*
 
 get-orig-source: $(PKG)_$(VER).orig.tar.xz $(info I: $(PKG)_$(VER))
 
@@ -110,4 +117,4 @@ $(PKG)_$(VER).orig.tar.xz:
 	&& $(RM) -r "$(PKG)-$(VER)"
 
 %:
-	dh $@ --buildsystem=cmake 
+	dh $@ --buildsystem=cmake
