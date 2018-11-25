@@ -1,2 +1,3 @@
 usr/lib/*/OGRE-*/libOgre*.so.*
 usr/lib/*/OGRE-*/OGRE/*.so.*
+/etc/ld.so.conf.d/ogre*.conf

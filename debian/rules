@@ -92,6 +92,12 @@ override_dh_install-arch:
 	dh_install -a
 	dh_missing --list-missing
 
+override_dh_auto_install:
+	mkdir -p debian/tmp/etc/ld.so.conf.d
+	echo $(LIB_MULTIARCH_PRIVATE_DIR) > debian/tmp/etc/ld.so.conf.d/ogre-$(OGRE-VERSION)-$(DEB_HOST_MULTIARCH).conf
+
+	dh_auto_install
+
 override_dh_installchangelogs:
 	dh_installchangelogs -- $(OGRE_CHANGELOG)
 
