@@ -65,9 +65,6 @@ override_dh_auto_build-indep:
 	#sed -i '/texi2html/ s|texi2html -Verbose|makeinfo --html --force|g;s|-split=node -top_file=index.html|--split=node|g' Docs/src/makedocs.sh
 	#cd Docs && bash ./src/makedocs.sh
 
-override_dh_shlibdeps:
-	dh_shlibdeps -l$(CURDIR)/debian/tmp/usr/lib/x86_64-linux-gnu/OGRE-2.1/
-
 override_dh_install-arch:
 	# Support multiple OGRE versions at once. Relocate headers
 	mv debian/tmp/usr/include/OGRE/ debian/tmp/${HEADERS_MULTIARCH_PRIVATE_DIR}
@@ -82,8 +79,15 @@ override_dh_install-arch:
 	sed -i 's:-I$${includedir}/OGRE::' debian/tmp/usr/$(LIB_MULTIARCH_OGRE_RELATIVE)/pkgconfig/OGRE-${OGRE_VERSION}.pc
 	sed -i 's:$${includedir}/OGRE:$${includedir}:' debian/tmp/usr/$(LIB_MULTIARCH_OGRE_RELATIVE)/pkgconfig/OGRE-${OGRE_VERSION}-MeshLodGenerator.pc
 
-	# Change pkgconfig path to be in the standard location
+	# Change pkgconfig/cmake path to be in the standard location
 	mv debian/tmp/usr/$(LIB_MULTIARCH_OGRE_RELATIVE)/pkgconfig/ debian/tmp/$(LIB_MULTIARCH_DIR)/
+	mv debian/tmp/usr/$(LIB_MULTIARCH_OGRE_RELATIVE)/OGRE/cmake debian/tmp/$(LIB_MULTIARCH_DIR)/OGRE-${OGRE_VERSION}/
+        # Move libraries (.so.2.*) to standard location
+	mv debian/tmp/usr/$(LIB_MULTIARCH_OGRE_RELATIVE)/lib*.so.2.* debian/tmp/$(LIB_MULTIARCH_DIR)/
+	# Fix symlinks to .so.2.* moved above
+	for f in $(wildcard debian/tmp/usr/$(LIB_MULTIARCH_OGRE_RELATIVE)/*.so); do \
+	    ln -sfn `readlink $$f | sed s:^:../:` $$f ; \
+	done
 
         # Samples
         #sed -i "/OGRE/ s|/OGRE|/OGRE-$(OGRE_VERSION)|g" debian/tmp/usr/share/OGRE/*.cfg

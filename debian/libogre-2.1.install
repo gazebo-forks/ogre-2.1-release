@@ -1,2 +1,2 @@
-usr/lib/*/OGRE-*/libOgre*.so.*
-usr/lib/*/OGRE-*/OGRE/*.so.*
+usr/lib/*/libOgre*.so.*
+usr/lib/*/OGRE-*/OGRE/*
