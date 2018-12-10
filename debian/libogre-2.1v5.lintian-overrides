@@ -1,3 +1,0 @@
-package-name-doesnt-match-sonames *
-# Bug reported #690084, no simple way to untangle
-embedded-library usr/lib/*/OGRE*/RenderSystem_GL.so.*: glew

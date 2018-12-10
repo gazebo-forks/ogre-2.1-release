@@ -1,6 +1,7 @@
-Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: OGRE
 Source: http://www.ogre3d.org/
+Files-Excluded: OgreMain/src/WIN32/ Tools/MilkshapeExport/ Tools/3dsmaxExport
 
 Files: *
 Copyright: 2000-2013, Torus Knot Software Ltd

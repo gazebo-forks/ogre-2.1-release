@@ -4,6 +4,7 @@
 #export DH_VERBOSE=1
 
 export DEB_BUILD_MAINT_OPTIONS   := hardening=+bindnow
+SHELL := bash
 
 DEB_HOST_MULTIARCH ?= $(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
 
@@ -14,7 +15,10 @@ OGRE_CHANGELOG = Docs/ChangeLog.html
 
 # Directories to install with Multi-arch and versioned OGRE dir names
 LIB_MULTIARCH_DIR = /usr/lib/$(DEB_HOST_MULTIARCH)
-LIB_MULTIARCH_PRIVATE_DIR = /usr/lib/$(DEB_HOST_MULTIARCH)/OGRE-$(OGRE_VERSION)
+
+LIB_MULTIARCH_OGRE_RELATIVE=lib/$(DEB_HOST_MULTIARCH)/OGRE-$(OGRE_VERSION)
+LIB_MULTIARCH_PRIVATE_DIR = /usr/$(LIB_MULTIARCH_OGRE_RELATIVE)
+HEADERS_MULTIARCH_PRIVATE_DIR = /usr/include/OGRE-$(OGRE_VERSION)
 
 UURL = git://github.com/OGRECave/ogre.git
 UURL_BRANCH=v2-1
@@ -27,11 +31,10 @@ LATEST_VER ?= $(shell dpkg-parsechangelog -l debian/changelog | grep ^Version | 
 VER = $(LATEST_VER)+$(DATE)r$(HASH)
 
 .PHONY: get-orig-source \
-        override_dh_auto_clean \
 	override_dh_auto_configure \
 	override_dh_auto_build-indep \
+	override_dh_installchangelogs \
 	override_dh_shlibdeps
-
 
 override_dh_auto_configure:
 	# Samples removed (do not meet DFSG), modify CMake files accordingly
@@ -40,7 +43,7 @@ override_dh_auto_configure:
 
         # RPATH from http://www.ogre3d.org/tikiwiki/Building+Ogre+With+CMake
 	dh_auto_configure -- \
-		-DOGRE_LIB_DIRECTORY="lib/$(DEB_HOST_MULTIARCH)" \
+		-DOGRE_LIB_DIRECTORY="$(LIB_MULTIARCH_OGRE_RELATIVE)" \
 		-DOGRE_FULL_RPATH:BOOL=FALSE \
 		-DOGRE_BUILD_RENDERSYSTEM_GLES2:BOOL=FALSE \
 		-DOGRE_BUILD_DOCS:BOOL=TRUE \
@@ -63,32 +66,38 @@ override_dh_auto_build-indep:
 	#cd Docs && bash ./src/makedocs.sh
 
 override_dh_install-arch:
-	# Copy files from template for this particular version
-	cp -f debian/libogre-VERSION.install debian/libogre-$(OGRE_VERSION).install
-	cp -f debian/libogre-VERSION.lintian-overrides debian/libogre-$(OGRE_VERSION).lintian-overrides
-	cp -f debian/libogre-VERSION.preinst debian/libogre-$(OGRE_VERSION).preinst
-	cp -f debian/libogre-VERSION.postinst debian/libogre-$(OGRE_VERSION).postinst
-	cp -f debian/libogre-VERSION.postrm debian/libogre-$(OGRE_VERSION).postrm
+	# Support multiple OGRE versions at once. Relocate headers
+	mv debian/tmp/usr/include/OGRE/ debian/tmp/${HEADERS_MULTIARCH_PRIVATE_DIR}
+	sed -i '/^includedir/s/$$/\/OGRE-$(OGRE_VERSION)/' debian/tmp/usr/$(LIB_MULTIARCH_OGRE_RELATIVE)/pkgconfig/*
+	# Modify pkgconfig names
+	sed -i 's/Name:\ OGRE/Name:\ OGRE-$(OGRE_VERSION)/' debian/tmp/usr/$(LIB_MULTIARCH_OGRE_RELATIVE)/pkgconfig/*
+	# Change pkgconfig file names
+	for f in $(wildcard  debian/tmp/usr/$(LIB_MULTIARCH_OGRE_RELATIVE)/pkgconfig/*.pc); do \
+	   mv $$f `sed 's/OGRE\(.*\)OGRE\(.*\).pc/OGRE\1OGRE-$(OGRE_VERSION)\2.pc/' <<< $$f`; \
+	done
+	# Remove extra Include in main pkgconfig file and MeshLoadGenerator
+	sed -i 's:-I$${includedir}/OGRE::' debian/tmp/usr/$(LIB_MULTIARCH_OGRE_RELATIVE)/pkgconfig/OGRE-${OGRE_VERSION}.pc
+	sed -i 's:$${includedir}/OGRE:$${includedir}:' debian/tmp/usr/$(LIB_MULTIARCH_OGRE_RELATIVE)/pkgconfig/OGRE-${OGRE_VERSION}-MeshLodGenerator.pc
 
-        # Introduced in 1.7.3-5 as an attempt at using versioned files/dirs for
-        # plugins and config files (so several versions of OGRE can be installed
-        # at once)
-	mv debian/tmp/usr/lib/$(DEB_HOST_MULTIARCH)/OGRE debian/tmp/$(LIB_MULTIARCH_PRIVATE_DIR)
-	sed -i "/{libdir}/ s|{libdir}/OGRE|{libdir}/OGRE-$(OGRE_VERSION)|g" debian/tmp/usr/lib/$(DEB_HOST_MULTIARCH)/pkgconfig/*
+	# Change pkgconfig/cmake path to be in the standard location
+	mv debian/tmp/usr/$(LIB_MULTIARCH_OGRE_RELATIVE)/pkgconfig/ debian/tmp/$(LIB_MULTIARCH_DIR)/
+	mv debian/tmp/usr/$(LIB_MULTIARCH_OGRE_RELATIVE)/OGRE/cmake debian/tmp/$(LIB_MULTIARCH_DIR)/OGRE-${OGRE_VERSION}/
+        # Move libraries (.so.2.*) to standard location
+	mv debian/tmp/usr/$(LIB_MULTIARCH_OGRE_RELATIVE)/lib*.so.2.* debian/tmp/$(LIB_MULTIARCH_DIR)/
+	# Fix symlinks to .so.2.* moved above
+	for f in $(wildcard debian/tmp/usr/$(LIB_MULTIARCH_OGRE_RELATIVE)/*.so); do \
+	    ln -sfn `readlink $$f | sed s:^:../:` $$f ; \
+	done
+
         # Samples
         #sed -i "/OGRE/ s|/OGRE|/OGRE-$(OGRE_VERSION)|g" debian/tmp/usr/share/OGRE/*.cfg
         #mv debian/tmp/usr/share/OGRE debian/tmp/usr/share/OGRE-$(OGRE_VERSION)
 
-	dh_install -a --list-missing
+	dh_install -a
+	dh_missing --list-missing
 
 override_dh_installchangelogs:
 	dh_installchangelogs -- $(OGRE_CHANGELOG)
-
-override_dh_clean:
-	dh_clean
-
-        # Remove files from template
-	rm -rf debian/libogre-$(OGRE_VERSION).*
 
 get-orig-source: $(PKG)_$(VER).orig.tar.xz $(info I: $(PKG)_$(VER))
 
@@ -112,4 +121,4 @@ $(PKG)_$(VER).orig.tar.xz:
 	&& $(RM) -r "$(PKG)-$(VER)"
 
 %:
-	dh $@ --buildsystem=cmake 
+	dh $@ --buildsystem=cmake
