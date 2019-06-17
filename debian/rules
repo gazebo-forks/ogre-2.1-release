@@ -30,6 +30,12 @@ DATE = $(shell date +%Y%m%d)
 LATEST_VER ?= $(shell dpkg-parsechangelog -l debian/changelog | grep ^Version | sed -n 's/.* \([0-9]\+\.[0-9]\+\.[0-9]\+\)\+.*/\1/p')
 VER = $(LATEST_VER)+$(DATE)r$(HASH)
 
+EXTRA_CMAKE_FLAGS =
+ifeq ($(DEB_HOST_ARCH),arm64)
+  EXTRA_CMAKE_FLAGS = -DOGRE_SIMD_NEON:BOOL=FALSE
+endif
+
+
 .PHONY: get-orig-source \
 	override_dh_auto_configure \
 	override_dh_auto_build-indep \
@@ -41,8 +47,10 @@ override_dh_auto_configure:
 	sed -i 's|^add_subdirectory(Samples)|#add_subdirectory(Samples)|' CMakeLists.txt
 	#sed -i "/OGRE_.*_PATH/ s|share/OGRE|share/OGRE-$(OGRE_VERSION)|g" CMake/InstallResources.cmake
 
+
         # RPATH from http://www.ogre3d.org/tikiwiki/Building+Ogre+With+CMake
 	dh_auto_configure -- \
+                $(EXTRA_CMAKE_FLAGS)
 		-DOGRE_LIB_DIRECTORY="$(LIB_MULTIARCH_OGRE_RELATIVE)" \
 		-DOGRE_FULL_RPATH:BOOL=FALSE \
 		-DOGRE_BUILD_RENDERSYSTEM_GLES2:BOOL=FALSE \
