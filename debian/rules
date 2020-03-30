@@ -50,7 +50,6 @@ override_dh_auto_configure:
 
         # RPATH from http://www.ogre3d.org/tikiwiki/Building+Ogre+With+CMake
 	dh_auto_configure -- \
-                $(EXTRA_CMAKE_FLAGS)
 		-DOGRE_LIB_DIRECTORY="$(LIB_MULTIARCH_OGRE_RELATIVE)" \
 		-DOGRE_FULL_RPATH:BOOL=FALSE \
 		-DOGRE_BUILD_RENDERSYSTEM_GLES2:BOOL=FALSE \
@@ -58,7 +57,7 @@ override_dh_auto_configure:
 		-DOGRE_INSTALL_DOCS:BOOL=TRUE \
 		-DOGRE_BUILD_SAMPLES:BOOL=FALSE \
 		-DOGRE_INSTALL_SAMPLES:BOOL=FALSE \
-		-DOGRE_INSTALL_SAMPLES_SOURCE:BOOL=FALSE
+		-DOGRE_INSTALL_SAMPLES_SOURCE:BOOL=FALSE $(EXTRA_CMAKE_FLAGS)
 
 override_dh_auto_build-indep:
 	dh_auto_build -i --
