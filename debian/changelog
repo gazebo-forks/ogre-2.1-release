@@ -1,4 +1,4 @@
-ogre-2.1 (2.0.9999~20180616~06a386f-3) bionic; urgency=medium
+ogre-2.1 (2.0.9999~20180616~06a386f-3) focal; urgency=medium
 
   * Make the package side-by-side installable with ogre-1.X
 
