@@ -55,7 +55,6 @@ cmake_configure_file(
     visibility = ["//visibility:private"],
 )
 
-
 main_srcs = glob(
             [
                 "OgreMain/src/*.cpp",
@@ -132,13 +131,11 @@ cc_library(
     ]
 )
 
-cc_library(
-    name = "ogre_main",
-    alwayslink = 1,
-    srcs = main_srcs,
-    hdrs = main_hdrs + ["OgreMain/include/OgreBuildSettings.h"],
+cc_binary(
+    name = "libOgreMain.so",
+    linkshared = True,
+    srcs = main_srcs + main_hdrs + ["OgreMain/include/OgreBuildSettings.h"],
     copts = [
-        "-DOgreMain_EXPORTS",
         "-Wno-implicit-fallthrough",
         "-Wno-string-conversion",
         "-Wno-deprecated-declarations",
@@ -156,14 +153,17 @@ cc_library(
     ],
 )
 
-cc_binary(
-    name = "libOgreMain.so",
-    linkshared = 1,
-    deps = [
-        ":ogre_main"
-    ],
+cc_library(
+    name = "ogre_main",
+    srcs = [":libOgreMain.so"],
+    hdrs = main_hdrs + ["OgreMain/include/OgreBuildSettings.h"],
     visibility = ["//visibility:public"],
+    deps = [
+        ":ogre_main_headers",
+        "@freetype2//:headers",
+    ],
 )
+
 
 ogre_gl_support_hdrs = glob(
     [
@@ -217,7 +217,7 @@ cc_library(
    srcs = ogre_gl_support_srcs + ogre_gl_support_hdrs,
    hdrs = ogre_gl_support_hdrs + ["OgreMain/include/OgreBuildSettings.h"],
    includes = ogre_gl_support_includes,
-   deps = [ ":ogre_main_headers" ],
+   deps = [ ":ogre_main" ],
    copts = [
        "-Wno-implicit-fallthrough",
    ],
@@ -229,15 +229,14 @@ cc_library(
        "-lXaw", "-lpthread",
        "-ldl", "-lfreeimage", "-latomic"],
    visibility = ["//visibility:public"],
-   alwayslink=1,
+   alwayslink = 1,
 )
 
 cc_binary(
-    name = "RenderSystem_GL3Plus.so",
+    name = "libRenderSystem_GL3Plus.so",
     linkshared = 1,
     deps = [
         ":rendersystem_gl3plus",
-        ":libOgreMain.so"
     ],
     visibility = ["//visibility:public"],
 )
