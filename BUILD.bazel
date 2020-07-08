@@ -55,32 +55,7 @@ cmake_configure_file(
     visibility = ["//visibility:private"],
 )
 
-cc_library(
-    name = "ogre_main_headers",
-    includes = [
-        "OgreMain/include",
-        "OgreMain/include/GLX",
-        "OgreMain/include/Threading",
-        "OgreMain/include/Math",
-        "OgreMain/include/Animation",
-        "OgreMain/include/CommandBuffer",
-        "OgreMain/include/Compositor",
-        "OgreMain/include/stbi",
-        "OgreMain/include/Hash",
-        "RenderSystems/GL3Plus/include",
-        "RenderSystems/GL3Plus/include/GLSL",
-        "RenderSystems/GL3Plus/src/windowing/GLX",
-        "RenderSystems/GL3Plus/include/windowing/GLX",
-    ],
-    hdrs = [ "OgreMain/include/OgreBuildSettings.h" ],
-    visibility = ["//visibility:private"],
-    alwayslink = 1,
-)
-
-cc_library(
-    name = "ogre_main",
-    srcs =
-        glob(
+main_srcs = glob(
             [
                 "OgreMain/src/*.cpp",
                 "OgreMain/src/Animation/*.cpp",
@@ -91,26 +66,26 @@ cc_library(
                 "OgreMain/src/stbi/*.c",
                 "OgreMain/src/Hash/*.cpp",
                 "OgreMain/src/nedmalloc/*.c",
+                "OgreMain/src/Math/Array/*.cpp",
                 "OgreMain/src/Math/Array/SSE2/Single/*.cpp",
                 "OgreMain/src/Math/Simple/C/*.cpp",
+                "OgreMain/src/Vao/*.cpp",
+                "OgreMain/src/Threading/OgreDefaultWorkQueueStandard.cpp",
+                "OgreMain/src/Threading/OgreBarrierPThreads.cpp",
+                "OgreMain/src/Threading/OgreLightweightMutexPThreads.cpp",
+                "OgreMain/src/Threading/OgreThreadsPThreads.cpp",
+
             ],
             exclude = [
                 "OgreMain/src/OgreConfigDialogNoOp.cpp",
                 "OgreMain/src/OgreFileSystemLayerNoOp.cpp",
-                "OgreMain/src/OgreDDSCodec.cpp",
                 "OgreMain/src/OgrePVRTCCodec.cpp",
-                "OgreMain/src/OgreETCCodec.cpp",
                 "OgreMain/src/OgreZip.cpp",
                 "OgreMain/src/OgreSTBICodec.cpp",
-            ],
-        ) + [
-            "OgreMain/src/Threading/OgreDefaultWorkQueueStandard.cpp",
-            "OgreMain/src/Threading/OgreBarrierPThreads.cpp",
-            "OgreMain/src/Threading/OgreLightweightMutexPThreads.cpp",
-            "OgreMain/src/Threading/OgreThreadsPThreads.cpp",
-        ],
-    hdrs =
-        glob(
+            ]
+)
+
+main_hdrs = glob(
             [
                 "OgreMain/include/*.h",
                 "OgreMain/include/*.inl",
@@ -138,28 +113,69 @@ cc_library(
             "OgreMain/src/OgreImageResampler.h",
             "OgreMain/src/OgrePixelConversions.h",
             "OgreMain/src/OgreSIMDHelper.h",
-        ],
+        ]
+
+cc_library(
+    name = "ogre_main_headers",
+    includes = [
+        "OgreMain/include",
+        "OgreMain/include/GLX",
+        "OgreMain/include/Threading",
+        "OgreMain/include/Math",
+        "OgreMain/include/Animation",
+        "OgreMain/include/CommandBuffer",
+        "OgreMain/include/Compositor",
+        "OgreMain/include/stbi",
+        "OgreMain/include/Hash",
+        "OgreMain/include/Threading",
+    ]
+)
+
+cc_binary(
+    name = "libOgreMain.so",
+    linkshared = True,
+    srcs = main_srcs + main_hdrs + ["OgreMain/include/OgreBuildSettings.h"],
     copts = [
-        "-DOgreMain_EXPORTS",
         "-Wno-implicit-fallthrough",
         "-Wno-string-conversion",
         "-Wno-deprecated-declarations",
     ],
-    includes = [
-        "OgreMain/include/Threading",
-    ],
     linkopts = [
         "-rdynamic",
+        "-lSM", "-lICE", "-lX11", "-lXt", "-lXaw", "-lpthread", "-ldl", "-lfreeimage", "-latomic",
+        "-lfreetype",
+        "-lpng"
     ],
     visibility = ["//visibility:public"],
     deps = [
         ":ogre_main_headers",
+        "@freetype2//:headers",
     ],
-    alwayslink = 1,
 )
+
+cc_library(
+    name = "ogre_main",
+    srcs = [":libOgreMain.so"],
+    hdrs = main_hdrs + ["OgreMain/include/OgreBuildSettings.h"],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":ogre_main_headers",
+        "@freetype2//:headers",
+    ],
+)
+
 
 ogre_gl_support_hdrs = glob(
     [
+        "OgreMain/include/OgrePrerequisites.h",
+        "OgreMain/include/OgrePlatform.h",
+        "OgreMain/include/OgreConfig.h",
+        "OgreMain/include/OgreWorkarounds.h",
+        "OgreMain/include/OgreRenderToVertexBuffer.h",
+        "OgreMain/include/*.h",
+        "OgreMain/include/**/*.h",
+        "OgreMain/include/**/*.inl",
+
         "RenderSystems/GL3Plus/include/*.h",
         "RenderSystems/GL3Plus/include/GL/*.h",
         "RenderSystems/GL3Plus/include/GLSL/*.h",
@@ -171,18 +187,21 @@ ogre_gl_support_hdrs = glob(
     ],
 )
 
-ogre_gl_support_includes = glob(
-    [
+ogre_gl_support_includes = [
         "RenderSystems/GL3Plus/include",
         "RenderSystems/GL3Plus/include/GL",
         "RenderSystems/GL3Plus/include/GLSL",
         "RenderSystems/GL3Plus/include/Vao",
         "RenderSystems/GL3Plus/include/windowing",
         "RenderSystems/GL3Plus/include/windowing/GLX",
+        "RenderSystems/GL3Plus/src/GLSL/include",
         "RenderSystems/GL3Plus/src/windowing",
         "RenderSystems/GL3Plus/src/windowing/GLX",
+        "RenderSystems/GL3Plus/include",
+        "RenderSystems/GL3Plus/include/GLSL",
+        "RenderSystems/GL3Plus/src/windowing/GLX",
+        "RenderSystems/GL3Plus/include/windowing/GLX",
     ]
-)
 
 ogre_gl_support_srcs = glob(
     [
@@ -194,18 +213,32 @@ ogre_gl_support_srcs = glob(
 )
 
 cc_library(
-   name = "rendersystem_gl",
-   srcs = ogre_gl_support_srcs,
-   hdrs = ogre_gl_support_hdrs,
+   name = "rendersystem_gl3plus",
+   srcs = ogre_gl_support_srcs + ogre_gl_support_hdrs,
+   hdrs = ogre_gl_support_hdrs + ["OgreMain/include/OgreBuildSettings.h"],
    includes = ogre_gl_support_includes,
+   deps = [ ":ogre_main" ],
    copts = [
        "-Wno-implicit-fallthrough",
    ],
-   deps = [
-       ":ogre_main",
-   ],
-   alwayslink = 1,
+   linkopts = [
+       "-lGL", "-lGLU",
+       "-lSM", "-lICE",
+       "-lX11", "-lXext",
+       "-lXrandr", "-lXt",
+       "-lXaw", "-lpthread",
+       "-ldl", "-lfreeimage", "-latomic"],
    visibility = ["//visibility:public"],
+   alwayslink = 1,
+)
+
+cc_binary(
+    name = "libRenderSystem_GL3Plus.so",
+    linkshared = 1,
+    deps = [
+        ":rendersystem_gl3plus",
+    ],
+    visibility = ["//visibility:public"],
 )
 
 #cc_library(
@@ -309,19 +342,3 @@ cc_library(
     visibility = ["//visibility:private"],
     alwayslink = 1,
 )
-'''
-cc_library(
-    name = "ogre2",
-    deps = [
-        ":ogre_main",
-        "//ogre2/Components:hlms_unlit",
-        "//ogre2/Components:overlay",
-        ":rendersystem_gl",
-        ":components",
-        ":plugins",
-    ],
-    visibility = ["//visibility:public"],
-    alwayslink = 1,
-)
-'''
-

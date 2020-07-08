@@ -166,6 +166,7 @@ cc_library(
     copts = [
         "-Iexternal/freetype2"
     ],
+    linkopts = [ "-lfreetype" ],
     deps = [
         "//ogre2:ogre_main",
         ":hlms_unlit",
