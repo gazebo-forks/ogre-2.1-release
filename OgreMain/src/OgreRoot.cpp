@@ -28,6 +28,8 @@ THE SOFTWARE.
 // Ogre includes
 #include "OgreStableHeaders.h"
 
+#include <iostream>
+
 #include "OgreRoot.h"
 
 #include "OgreRenderSystem.h"
@@ -1465,9 +1467,11 @@ namespace Ogre {
     //-----------------------------------------------------------------------
     void Root::loadPlugin(const String& pluginName)
     {
+      std::cout << "Load: " << pluginName << std::endl;
 #if OGRE_PLATFORM != OGRE_PLATFORM_NACL && OGRE_PLATFORM != OGRE_PLATFORM_EMSCRIPTEN
         // Load plugin library
         DynLib* lib = DynLibManager::getSingleton().load( pluginName );
+
         // Store for later unload
         // Check for existence, because if called 2+ times DynLibManager returns existing entry
         if (std::find(mPluginLibs.begin(), mPluginLibs.end(), lib) == mPluginLibs.end())

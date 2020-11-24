@@ -3,7 +3,7 @@ cc_library(
     hdrs = glob(
         [
             "Hlms/Pbs/src/*.inc",
-        ]
+        ],
     ),
 )
 
@@ -13,22 +13,22 @@ cc_library(
         [
             "Hlms/Common/src/*.cpp",
             "Hlms/Common/include/*.h",
-        ]
+        ],
     ),
     hdrs = glob(
         [
-            "Hlms/Common/include/*.h"
-        ]
+            "Hlms/Common/include/*.h",
+        ],
     ),
-    strip_include_prefix = "Hlms/Common/include",
     include_prefix = "Hlms/Common/",
     includes = [
         "Hlms/Common/include",
     ],
-    deps = [
-        "//ogre2:ogre_main"
-    ],
+    strip_include_prefix = "Hlms/Common/include",
     visibility = ["//visibility:public"],
+    deps = [
+        "//ogre2:ogre_main",
+    ],
     alwayslink = 1,
 )
 
@@ -42,24 +42,24 @@ cc_library(
             "Hlms/Pbs/include/*.h",
             "Hlms/Pbs/include/Cubemaps/*.h",
             "Hlms/Pbs/include/InstantRadiosity/*.h",
-        ]
+        ],
     ),
     hdrs = glob(
         [
             "Hlms/Pbs/include/*.h",
-        ]
+        ],
     ),
-    strip_include_prefix = "Hlms/Pbs/include",
     include_prefix = "Hlms/Pbs",
     includes = [
         "Hlms/Pbs/include",
     ],
+    strip_include_prefix = "Hlms/Pbs/include",
+    visibility = ["//visibility:public"],
     deps = [
-        "//ogre2:ogre_main",
         ":hlms_common",
         ":hlms_pbs_inc",
+        "//ogre2:ogre_main",
     ],
-    visibility = ["//visibility:public"],
     alwayslink = 1,
 )
 
@@ -68,21 +68,21 @@ cc_library(
     srcs = glob(
         [
             "Hlms/PbsMobile/src/*.cpp",
-        ]
+        ],
     ),
     hdrs = glob(
         [
             "Hlms/PbsMobile/include/*.h",
-        ]
+        ],
     ),
     includes = [
         "Hlms/PbsMobile/include",
-        ],
-    deps = [
-        "//ogre2:ogre_main",
-        ":hlms_common",
     ],
     visibility = ["//visibility:public"],
+    deps = [
+        ":hlms_common",
+        "//ogre2:ogre_main",
+    ],
     alwayslink = 1,
 )
 
@@ -91,7 +91,7 @@ cc_library(
     hdrs = glob(
         [
             "Hlms/Unlit/src/*.inc",
-        ]
+        ],
     ),
 )
 
@@ -101,24 +101,24 @@ cc_library(
         [
             "Hlms/Unlit/src/*.cpp",
             "Hlms/Unlit/include/*.h",
-        ]
+        ],
     ),
     hdrs = glob(
         [
             "Hlms/Unlit/include/*.h",
-        ]
+        ],
     ),
-    strip_include_prefix = "Hlms/Unlit/include",
     include_prefix = "Hlms/Unlit",
     includes = [
         "Hlms/Unlit/include",
-        ],
+    ],
+    strip_include_prefix = "Hlms/Unlit/include",
+    visibility = ["//visibility:public"],
     deps = [
-        "//ogre2:ogre_main",
         ":hlms_common",
         ":hlms_unlit_inc",
+        "//ogre2:ogre_main",
     ],
-    visibility = ["//visibility:public"],
     alwayslink = 1,
 )
 
@@ -127,21 +127,21 @@ cc_library(
     srcs = glob(
         [
             "Hlms/UnlitMobile/src/*.cpp",
-        ]
+        ],
     ),
     hdrs = glob(
         [
             "Hlms/UnlitMobile/include/*.h",
-        ]
+        ],
     ),
     includes = [
         "Hlms/UnlitMobile/include",
     ],
-    deps = [
-        "//ogre2:ogre_main",
-        ":hlms_common",
-    ],
     visibility = ["//visibility:public"],
+    deps = [
+        ":hlms_common",
+        "//ogre2:ogre_main",
+    ],
     alwayslink = 1,
 )
 
@@ -151,30 +151,23 @@ cc_library(
         [
             "Overlay/src/*.cpp",
             "Overlay/include/*.h",
-        ]
+        ],
     ),
     hdrs = glob(
         [
             "Overlay/include/*.h",
-        ]
+        ],
     ),
-    strip_include_prefix = "Overlay/include",
     include_prefix = "Overlay",
     includes = [
         "Overlay/include",
     ],
-    copts = [
-        "-Iexternal/freetype2"
-    ],
-    linkopts = [ "-lfreetype" ],
-    deps = [
-        "//ogre2:ogre_main",
-        ":hlms_unlit",
-        # TODO (john): enable below for Google3, and delete all other existing
-        # freetype2 logic in this project (WORKSPACE and here)
-        #"//third_party/freetype2:freetype_latest",
-        "@freetype2//:headers",
-    ],
+    strip_include_prefix = "Overlay/include",
     visibility = ["//visibility:public"],
+    deps = [
+        ":hlms_unlit",
+        "//ogre2:ogre_main",
+        "@freetype2",
+    ],
     alwayslink = 1,
 )
