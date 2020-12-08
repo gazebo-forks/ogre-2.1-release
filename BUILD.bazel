@@ -203,7 +203,6 @@ cc_library(
         "@freeimage",
         "@gl//:GL",
         "@gl//:GLU",
-        "@gl//:glut",
     ],
     alwayslink = 1,
 )
