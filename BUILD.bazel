@@ -1,0 +1,208 @@
+load(
+    "//ign_bazel:build_defs.bzl",
+    "IGNITION_FEATURES",
+    "IGNITION_ROOT",
+    "IGNITION_VISIBILITY",
+    "cmake_configure_file",
+)
+
+package(
+    default_visibility = IGNITION_VISIBILITY,
+    features = IGNITION_FEATURES,
+)
+
+licenses(["notice"])
+
+exports_files(["LICENSE"])
+
+cmake_configure_file(
+    name = "OgreBuildSettings",
+    src = "CMake/Templates/OgreBuildSettings.h.in",
+    out = "OgreMain/include/OgreBuildSettings.h",
+    cmakelists = ["CMake/CMakeLists.txt"],
+    defines = [
+        "OGRE_DEBUG_LEVEL_DEBUG=3",
+        "OGRE_DEBUG_LEVEL_RELEASE=0",
+        "OGRE_BUILD_RENDERSYSTEM_GL3PLUS=1",
+        "OGRE_BUILD_PLUGIN_PFX=1",
+        "OGRE_BUILD_COMPONENT_HLMS_PBS_MOBILE=1",
+        "OGRE_BUILD_COMPONENT_HLMS_UNLIT_MOBILE=1",
+        "OGRE_BUILD_COMPONENT_HLMS_PBS=1",
+        "OGRE_BUILD_COMPONENT_HLMS_UNLIT=1",
+        "OGRE_BUILD_COMPONENT_MESHLODGENERATOR=1",
+        "OGRE_BUILD_COMPONENT_OVERLAY=1",
+        "OGRE_CONFIG_LITTLE_ENDIAN=1",
+        "OGRE_SET_DOUBLE=0",
+        "OGRE_SET_ALLOCATOR=1",
+        "OGRE_SET_CONTAINERS_USE_ALLOCATOR=1",
+        "OGRE_SET_STRING_USE_ALLOCATOR=0",
+        "OGRE_SET_MEMTRACK_DEBUG=0",
+        "OGRE_SET_MEMTRACK_RELEASE=0",
+        "OGRE_SET_ASSERT_MODE=1",
+        "OGRE_SET_THREADS=0",
+        "OGRE_SET_THREAD_PROVIDER=0",
+        "OGRE_SET_DISABLE_MESHLOD=0",
+        "OGRE_SET_DISABLE_FREEIMAGE=0",
+        "OGRE_SET_DISABLE_JSON=1",
+        "OGRE_SET_DISABLE_DDS=0",
+        "OGRE_SET_DISABLE_PVRTC=1",
+        "OGRE_SET_DISABLE_ETC=0",
+        "OGRE_SET_DISABLE_STBI=1",
+        "OGRE_SET_DISABLE_ASTC=1",
+        "OGRE_SET_DISABLE_ZIP=1",
+        "OGRE_SET_DISABLE_VIEWPORT_ORIENTATIONMODE=1",
+        "OGRE_SET_DISABLE_GLES2_CG_SUPPORT=1",
+        "OGRE_SET_DISABLE_GLES2_GLSL_OPTIMISER=1",
+        "OGRE_SET_DISABLE_GLES2_VAO_SUPPORT=1",
+        "OGRE_SET_DISABLE_GL_STATE_CACHE_SUPPORT=1",
+        "OGRE_SET_DISABLE_GLES3_SUPPORT=1",
+        "OGRE_SET_DISABLE_TBB_SCHEDULER=0",
+        "OGRE_SET_USE_BOOST=0",
+        "OGRE_SET_PROFILING=0",
+        "OGRE_SET_DISABLE_QUAD_BUFFER_STEREO=1",
+        "OGRE_SET_DISABLE_FINE_LIGHT_MASK_GRANULARITY=1",
+        "OGRE_SET_USE_SIMD=1",
+        "OGRE_SET_RESTRICT_ALIASING=1",
+    ],
+    visibility = ["//visibility:private"],
+)
+
+main_srcs = glob(
+    [
+        "OgreMain/src/*.cpp",
+        "OgreMain/src/Animation/*.cpp",
+        "OgreMain/src/CommandBuffer/*.cpp",
+        "OgreMain/src/Compositor/*.cpp",
+        "OgreMain/src/Compositor/**/*.cpp",
+        "OgreMain/src/GLX/*.cpp",
+        "OgreMain/src/stbi/*.c",
+        "OgreMain/src/Hash/*.cpp",
+        "OgreMain/src/nedmalloc/*.c",
+        "OgreMain/src/Math/Array/*.cpp",
+        "OgreMain/src/Math/Array/SSE2/Single/*.cpp",
+        "OgreMain/src/Math/Simple/C/*.cpp",
+        "OgreMain/src/Vao/*.cpp",
+        "OgreMain/src/Threading/OgreDefaultWorkQueueStandard.cpp",
+        "OgreMain/src/Threading/OgreBarrierPThreads.cpp",
+        "OgreMain/src/Threading/OgreLightweightMutexPThreads.cpp",
+        "OgreMain/src/Threading/OgreThreadsPThreads.cpp",
+    ],
+    exclude = [
+        "OgreMain/src/OgreConfigDialogNoOp.cpp",
+        "OgreMain/src/OgreFileSystemLayerNoOp.cpp",
+        "OgreMain/src/OgrePVRTCCodec.cpp",
+        "OgreMain/src/OgreZip.cpp",
+        "OgreMain/src/OgreSTBICodec.cpp",
+    ],
+)
+
+main_hdrs = glob(
+    [
+        "OgreMain/include/*.h",
+        "OgreMain/include/*.inl",
+        "OgreMain/include/debugbreak/*.h",
+        "OgreMain/src/GLX/*.h",
+        "OgreMain/include/GLX/*.h",
+        "OgreMain/src/stbi/*.h",
+        "OgreMain/src/nedmalloc/*.h",
+        "OgreMain/include/Hash/*.h",
+        "OgreMain/include/Vao/*.h",
+        "OgreMain/include/Threading/*.h",
+        "OgreMain/include/Animation/*.h",
+        "OgreMain/include/Animation/*.inl",
+        "OgreMain/include/Compositor/*.h",
+        "OgreMain/include/Compositor/**/*.h",
+        "OgreMain/include/CommandBuffer/*.h",
+        "OgreMain/include/Math/Array/*.h",
+        "OgreMain/include/Math/Simple/*.h",
+        "OgreMain/include/Math/Simple/C/*.h",
+        "OgreMain/include/Math/Simple/C/*.inl",
+        "OgreMain/include/Math/Array/SSE2/Single/*.h",
+        "OgreMain/include/Math/Array/SSE2/Single/*.inl",
+    ],
+) + [
+    "OgreMain/src/OgreImageResampler.h",
+    "OgreMain/src/OgrePixelConversions.h",
+    "OgreMain/src/OgreSIMDHelper.h",
+]
+
+cc_library(
+    name = "ogre_main_headers",
+    hdrs = main_hdrs + ["OgreMain/include/OgreBuildSettings.h"],
+    includes = [
+        "OgreMain/include",
+        "OgreMain/include/Animation",
+        "OgreMain/include/CommandBuffer",
+        "OgreMain/include/Compositor",
+        "OgreMain/include/GLX",
+        "OgreMain/include/Hash",
+        "OgreMain/include/Math",
+        "OgreMain/include/Threading",
+        "OgreMain/include/stbi",
+    ],
+)
+
+ogre_gl_support_hdrs = glob(
+    [
+        "RenderSystems/GL3Plus/include/*.h",
+        "RenderSystems/GL3Plus/include/GL/*.h",
+        "RenderSystems/GL3Plus/include/GLSL/*.h",
+        "RenderSystems/GL3Plus/include/Vao/*.h",
+        "RenderSystems/GL3Plus/include/windowing/*.h",
+        "RenderSystems/GL3Plus/include/windowing/GLX/*.h",
+        "RenderSystems/GL3Plus/src/windowing/*.h",
+        "RenderSystems/GL3Plus/src/windowing/GLX/*.h",
+    ],
+)
+
+ogre_gl_support_includes = [
+    "RenderSystems/GL3Plus/include",
+    "RenderSystems/GL3Plus/include/GL",
+    "RenderSystems/GL3Plus/include/GLSL",
+    "RenderSystems/GL3Plus/include/Vao",
+    "RenderSystems/GL3Plus/include/windowing",
+    "RenderSystems/GL3Plus/include/windowing/GLX",
+    "RenderSystems/GL3Plus/src/GLSL/include",
+    "RenderSystems/GL3Plus/src/windowing",
+    "RenderSystems/GL3Plus/src/windowing/GLX",
+    "RenderSystems/GL3Plus/include",
+    "RenderSystems/GL3Plus/include/GLSL",
+    "RenderSystems/GL3Plus/src/windowing/GLX",
+    "RenderSystems/GL3Plus/include/windowing/GLX",
+]
+
+ogre_gl_support_srcs = glob(
+    [
+        "RenderSystems/GL3Plus/src/windowing/GLX/*.cpp",
+        "RenderSystems/GL3Plus/src/GLSL/*.cpp",
+        "RenderSystems/GL3Plus/src/Vao/*.cpp",
+        "RenderSystems/GL3Plus/src/*.cpp",
+    ],
+)
+
+cc_library(
+    name = "ogre_main",
+    srcs = main_srcs + ogre_gl_support_srcs + ogre_gl_support_hdrs,
+    hdrs = main_hdrs + ogre_gl_support_hdrs,
+    copts = [
+        "-Wno-implicit-fallthrough",
+        "-Wno-string-conversion",
+        "-Wno-deprecated-declarations",
+    ],
+    defines = ["OGRE_STATIC_LIB=1"],
+    includes = ogre_gl_support_includes,
+    linkopts = [
+        "-ldl",
+        "-pthread",
+    ],
+    deps = [
+        ":ogre_main_headers",
+        "@X//:SM",
+        "@X//:Xaw",
+        "@X//:Xrandr",
+        "@freeimage",
+        "@gl//:GL",
+        "@gl//:GLU",
+    ],
+    alwayslink = 1,
+)
