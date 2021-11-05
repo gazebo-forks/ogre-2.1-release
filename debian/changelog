@@ -1,3 +1,9 @@
+ogre-2.1 (2.0.9999~20180616~06a386f-3) bionic; urgency=medium
+
+  * Make the package side-by-side installable with ogre-1.X
+
+ -- Jose Luis Rivero <jrivero@osrfoundation.org>  Fri, 16 Nov 2018 18:49:02 +0000
+
 ogre-2.1 (2.0.9999~20180616~06a386f-3) buster; urgency=medium
 
   * Make the package side-by-side installable with ogre-1.X
